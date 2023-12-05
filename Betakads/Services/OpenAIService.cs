@@ -12,8 +12,9 @@ public class OpenAIService : IOpenAIService
     private readonly OpenAIClient _openAIClient;
 
     public OpenAIService() => _openAIClient = new OpenAIClient(
-    new Uri(""),
-    new AzureKeyCredential(""));
+              new Uri("YOUR_AZURE_OPEN_AI_URL"),
+              new AzureKeyCredential("YOUR_AZURE_KEY")
+        );
 
 
     public async Task<string> ConvertTextToCardsList(string promptPayload, int numberOfCards)
