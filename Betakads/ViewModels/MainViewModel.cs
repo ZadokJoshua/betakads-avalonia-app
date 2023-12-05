@@ -17,6 +17,7 @@ using System.Linq;
 using Avalonia.Threading;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
+using System.Text;
 
 namespace Betakads.ViewModels;
 
@@ -43,22 +44,25 @@ public partial class MainViewModel : ViewModelBase
     private int _numberOfcards = 3;
 
     [ObservableProperty]
-    private string _ankiDeckName = string.Empty;
+    private bool _changeFileNamePrefix;
+
+    [ObservableProperty]
+    private string __ankiTxtFilePrefix = string.Empty;
 
     [ObservableProperty]
     private string _extractedText = string.Empty;
 
     [ObservableProperty]
-    private int numberOfExtractedTextWords;
+    private int _numberOfExtractedTextWords;
 
     [ObservableProperty]
-    private int numberOfExtractedTextChars;
+    private int _numberOfExtractedTextChars;
 
     [ObservableProperty]
     private ObservableCollection<Card> _cards = new();
 
     [ObservableProperty]
-    private YoutubeMetadata _youtubeMetadata;
+    private YoutubeMetadata? _youtubeMetadata;
 
     [ObservableProperty]
     private bool _isBusy;
@@ -165,12 +169,22 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task SaveAnkiCards()
     {
-        //if (Cards.Count <= 0) return;
-        //var selectedFolder = await DoOpenFolderPickerAsync();
-        //if (selectedFolder != null)
-        //{
-        //    var result = _ankiService.CreateDeckWIthCards(new Deck(AnkiDeckName, Cards.ToList()), selectedFolder.Path.AbsolutePath);
-        //}
+        if (Cards.Count <= 0) return;
+        StringBuilder ankiTxt = new();
+
+        var selectedFolder = await DoOpenFolderPickerAsync();
+
+        if (selectedFolder != null)
+        {
+            foreach (var card in Cards.ToList())
+            {
+                ankiTxt.AppendLine($"{card.Front};{card.Back}");
+            }
+
+            string fileName = ChangeFileNamePrefix ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt" : $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
+            string ankiFilePath = $@"{selectedFolder.Path.AbsolutePath}/{fileName}";
+            File.WriteAllText(ankiFilePath, ankiTxt.ToString());
+        }
     }
     #endregion
 
