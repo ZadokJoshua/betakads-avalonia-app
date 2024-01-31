@@ -248,12 +248,14 @@
                                             <TextBlock
                                                 Grid.Row="0"
                                                 Grid.Column="0"
-                                                Text="{Binding Front, StringFormat='Front: {0}'}" />
+                                                Text="{Binding Front, StringFormat='Front: {0}'}"
+                                                TextWrapping="Wrap" />
                                             <TextBlock
                                                 Grid.Row="1"
                                                 Grid.Column="0"
                                                 FontWeight="Bold"
-                                                Text="{Binding Back, StringFormat='Back: {0}'}" />
+                                                Text="{Binding Back, StringFormat='Back: {0}'}"
+                                                TextWrapping="Wrap" />
 
                                             <Button
                                                 Grid.RowSpan="2"
@@ -279,8 +281,14 @@
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <CheckBox
                                 x:Name="ChangeFilePrefixCheckBox"
-                                Content="Change File Prefix"/>
-                            <TextBox IsVisible="{Binding #ChangeFilePrefixCheckBox.IsChecked}" Watermark="Betakad" Width="100" MaxWidth="150"/>
+                                Content="Change File Prefix"
+                                IsChecked="{Binding ChangeFileNamePrefix}" />
+                            <TextBox
+                                Width="100"
+                                MaxWidth="150"
+                                IsVisible="{Binding #ChangeFilePrefixCheckBox.IsChecked}"
+                                Text="{Binding AnkiTxtFilePrefix}"
+                                Watermark="Betakad" />
                         </StackPanel>
 
                         <Button

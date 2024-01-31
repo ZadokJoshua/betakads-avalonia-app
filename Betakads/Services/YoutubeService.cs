@@ -1,9 +1,4 @@
-﻿using Betakads.Models;
-using Betakads.Services.Interfaces;
-using System;
-using System.Text;
-using System.Threading.Tasks;
-using YoutubeExplode;
+﻿using YoutubeExplode;
 using YoutubeExplode.Common;
 
 namespace Betakads.Services
@@ -32,7 +27,7 @@ namespace Betakads.Services
                     videoSubtitleText.Append(caption);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }

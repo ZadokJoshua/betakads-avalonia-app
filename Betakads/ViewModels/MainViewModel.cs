@@ -1,23 +1,8 @@
-﻿using Betakads.Models;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform.Storage;
-using System.Threading.Tasks;
-using System;
-using System.Threading;
-using System.IO;
-using Betakads.Services;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Linq;
-using Avalonia.Threading;
-using MsBox.Avalonia.Enums;
+﻿using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
-using System.Text;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using static Betakads.Helpers.HelperMethods;
 
 namespace Betakads.ViewModels;
 
@@ -47,7 +32,7 @@ public partial class MainViewModel : ViewModelBase
     private bool _changeFileNamePrefix;
 
     [ObservableProperty]
-    private string __ankiTxtFilePrefix = string.Empty;
+    private string _ankiTxtFilePrefix = string.Empty;
 
     [ObservableProperty]
     private string _extractedText = string.Empty;
@@ -59,13 +44,12 @@ public partial class MainViewModel : ViewModelBase
     private int _numberOfExtractedTextChars;
 
     [ObservableProperty]
-    private ObservableCollection<Card> _cards = new();
-
-    [ObservableProperty]
     private YoutubeMetadata? _youtubeMetadata;
 
     [ObservableProperty]
     private bool _isBusy;
+
+    public ObservableCollection<Card> Cards { get; set; } = [];
     #endregion
 
     public MainViewModel()
@@ -81,15 +65,16 @@ public partial class MainViewModel : ViewModelBase
         NumberOfExtractedTextWords = Regex.Matches(value, "\\w+").Count;
     }
 
-    private async Task<YoutubeMetadata> GetVideoMetaData(string videoUrl) => await _youtubeService.GetVideoMetadata(videoUrl);
+    private async Task<YoutubeMetadata> GetVideoMetaData(string videoUrl) => 
+        await _youtubeService.GetVideoMetadata(videoUrl);
 
     #region Commands
     [RelayCommand]
     private async Task SelectFile()
     {
-            var file = await DoOpenFilePickerAsync();
+            var file = await DoOpenFileOrFolderPickerAsync(isFile: true);
             if (file is null) return;
-            SelectedFile = file;
+            SelectedFile = (IStorageFile)file;
             FileName = SelectedFile.Name;
     }
 
@@ -97,28 +82,39 @@ public partial class MainViewModel : ViewModelBase
     private async Task ExtractText()
     {
         IsBusy = true;
+
         try
         {
-            if (IsSelectSourceTypeYoutube)
-            {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    ExtractedText = await _youtubeService.GetVideoCaptions(YoutubeVideoUrl);
-                    YoutubeMetadata = await GetVideoMetaData(YoutubeVideoUrl);
+                    if (IsSelectSourceTypeYoutube)
+                    {
+                        if (string.IsNullOrEmpty(YoutubeVideoUrl)) return;
+
+                        ExtractedText = await _youtubeService.GetVideoCaptions(YoutubeVideoUrl);
+                        YoutubeMetadata = await GetVideoMetaData(YoutubeVideoUrl);
+                    }
+                    else
+                    {
+                        if (SelectedFile == null) return;
+
+                        ExtractedText = await _pdfService.ExtractTxtFromPdf(SelectedFile.Path.LocalPath);
+                    }
                 });
-            }
-            else
-            {
-                ExtractedText = _pdfService.ExtractTxtFromPdf(SelectedFile.Path.LocalPath);
-            }
         }
         catch(Exception ex)
         {
-            var box = MessageBoxManager
-          .GetMessageBoxStandard("Error", ex.Message,
-              ButtonEnum.Ok, Icon.Error);
+            var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
+            {
+                ContentTitle = "Error",
+                ContentMessage = ex.Message,
+                Icon = Icon.Error,
+                MaxWidth = 500,
+                MaxHeight = 800,
+                ShowInCenter = true
+            });
 
-            var result = await box.ShowAsync();
+            await box.ShowAsync();
         }
         finally
         {
@@ -130,17 +126,18 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task GenerateCards()
     {
+        if (string.IsNullOrWhiteSpace(ExtractedText)) return;
+
         IsBusy = true;
 
         try
         {
-            if (string.IsNullOrWhiteSpace(ExtractedText)) return;
-
             var cardsJson = await Dispatcher.UIThread.InvokeAsync(async () => await _openAIService.ConvertTextToCardsList(ExtractedText, NumberOfcards));
 
             if (string.IsNullOrEmpty(cardsJson)) return;
 
-            List<Card> cardsList = JsonSerializer.Deserialize<List<Card>>(cardsJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            List<Card>? cardsList = JsonSerializer.Deserialize<List<Card>>(cardsJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+
             Cards.Clear();
 
             foreach (var card in cardsList)
@@ -150,11 +147,21 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            var box = MessageBoxManager
-          .GetMessageBoxStandard("Error", ex.Message,
-              ButtonEnum.Ok, Icon.Error);
+            var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
+            {
+                ContentTitle = "Error",
+                ContentMessage = ex.Message,
+                Icon = Icon.Error,
+                MaxWidth = 400,
+                MaxHeight = 250,
+                ShowInCenter = true,
+                Topmost = false,
+                ButtonDefinitions = [
+                    new ButtonDefinition { Name = "Ok"},
+                ]
+            });
 
-            var result = await box.ShowAsync();
+            await box.ShowAsync();
         }
         finally
         {
@@ -172,7 +179,7 @@ public partial class MainViewModel : ViewModelBase
         if (Cards.Count <= 0) return;
         StringBuilder ankiTxt = new();
 
-        var selectedFolder = await DoOpenFolderPickerAsync();
+        var selectedFolder = await DoOpenFileOrFolderPickerAsync(isFile: false);
 
         if (selectedFolder != null)
         {
@@ -181,41 +188,13 @@ public partial class MainViewModel : ViewModelBase
                 ankiTxt.AppendLine($"{card.Front};{card.Back}");
             }
 
-            string fileName = ChangeFileNamePrefix ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt" : $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
-            string ankiFilePath = $@"{selectedFolder.Path.AbsolutePath}/{fileName}";
+            string fileName = ChangeFileNamePrefix 
+                ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt" 
+                : $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
+
+            string ankiFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
             File.WriteAllText(ankiFilePath, ankiTxt.ToString());
         }
     }
     #endregion
-
-    private async Task<IStorageFile?> DoOpenFilePickerAsync()
-    {
-        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
-            desktop.MainWindow?.StorageProvider is not { } provider)
-            throw new NullReferenceException("Missing StorageProvider instance.");
-
-        var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
-        {
-            Title = "Select File",
-            AllowMultiple = false,
-            FileTypeFilter =  new[] { FilePickerFileTypes.Pdf }
-        });
-
-        return files?.Count >= 1 ? files[0] : null;
-    }
-
-    private async Task<IStorageFolder?> DoOpenFolderPickerAsync()
-    {
-        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
-                       desktop.MainWindow?.StorageProvider is not { } provider)
-            throw new NullReferenceException("Missing StorageProvider instance.");
-
-        var folder = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
-        {
-            Title = "Select Folder",
-            AllowMultiple = false
-        });
-
-        return folder?.Count >= 1 ? folder[0] : null;
-    }
 }
