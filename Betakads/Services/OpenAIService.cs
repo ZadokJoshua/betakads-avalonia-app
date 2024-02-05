@@ -9,7 +9,7 @@ public class OpenAIService(bool useAzureOpenAI = false) : IOpenAIService
         new Uri(ApiSettings.AZURE_URI), new AzureKeyCredential(ApiSettings.AZURE_KEY))
             : new OpenAIClient(ApiSettings.OPEN_AI_KEY);
 
-    public async Task<string> ConvertTextToCardsList(string promptPayload, int numberOfCards)
+    public async Task<string> ConvertTextToCardsList(PromptPayload payload)
     {
         var chatCompletionsOptions = new ChatCompletionsOptions()
         {
@@ -73,7 +73,7 @@ public class OpenAIService(bool useAzureOpenAI = false) : IOpenAIService
                             }
                         ]
                 """),
-                new ChatMessage(ChatRole.User, $"Create an array of {numberOfCards} cards only from this text: {promptPayload}"),
+                new ChatMessage(ChatRole.User, $"Create an array of {payload.NumberOfCards} cards only from this text: {payload.ExtractedText}"),
             },
 
             // DeploymentName = "gpt-35-turbo-1106", // For Azure Open AI
