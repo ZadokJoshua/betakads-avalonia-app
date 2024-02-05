@@ -7,7 +7,7 @@
     xmlns:model="clr-namespace:Betakads.Models"
     xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
     xmlns:vm="clr-namespace:Betakads.ViewModels"
-    d:DesignHeight="450"
+    d:DesignHeight="750"
     d:DesignWidth="800"
     x:DataType="vm:MainViewModel"
     mc:Ignorable="d">
@@ -291,10 +291,18 @@
                                 Watermark="Betakad" />
                         </StackPanel>
 
-                        <Button
-                            Command="{Binding SaveAnkiCardsCommand}"
-                            Content="Save Cards"
-                            ToolTip.Tip="Save cards in a .txt format compatible with Anki Import Settings." />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button
+                                Command="{Binding SaveAnkiCardsCommand}"
+                                Content="Save Cards"
+                                ToolTip.Tip="Save cards in a .txt format compatible with Anki Import Settings." />
+
+                            <Button
+                                Background="#81a2be"
+                                Command="{Binding OpenInAnkiCommand}"
+                                Content="Open in Anki"
+                                ToolTip.Tip="Save cards in a .txt format and open in Anki Import Settings." />
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Expander>

@@ -49,6 +49,8 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isBusy;
 
+    private string _savedFilePath = string.Empty;
+
     public ObservableCollection<Card> Cards { get; set; } = [];
     #endregion
 
@@ -168,7 +170,6 @@ public partial class MainViewModel : ViewModelBase
         {
             IsBusy = false;
         }
-
     }
 
     [RelayCommand]
@@ -194,9 +195,16 @@ public partial class MainViewModel : ViewModelBase
                 ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt" 
                 : $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
 
-            string ankiFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
-            File.WriteAllText(ankiFilePath, ankiTxt.ToString());
+            _savedFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
+            File.WriteAllText(_savedFilePath, ankiTxt.ToString());
         }
+    }
+
+    [RelayCommand]
+    private async Task OpenInAnki()
+    {
+        await SaveAnkiCards();
+        OpenAnkiImportSettings(_savedFilePath);
     }
     #endregion
 }
