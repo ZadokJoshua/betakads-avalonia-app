@@ -140,7 +140,7 @@ public partial class MainViewModel : ViewModelBase
 
             Cards.Clear();
 
-            foreach (var card in cardsList)
+            foreach (var card in cardsList!)
             {
                 Cards.Add(card);
             }
