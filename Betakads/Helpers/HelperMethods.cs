@@ -1,4 +1,6 @@
-﻿namespace Betakads.Helpers;
+﻿using System.Diagnostics;
+
+namespace Betakads.Helpers;
 
 public static class HelperMethods
 {
@@ -28,5 +30,13 @@ public static class HelperMethods
 
             return folder?.Count >= 1 ? folder[0] : null;
         }
+    }
+
+    public static void OpenAnkiImportSettings(string filePath)
+    {
+        using Process ankiProcess = new();
+        ankiProcess.StartInfo.FileName = @"C:\\Users\\Zadok\\AppData\\Local\\Programs\\Anki\\anki.exe";
+        ankiProcess.StartInfo.Arguments = filePath;
+        ankiProcess.Start();
     }
 }
