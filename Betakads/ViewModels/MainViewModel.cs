@@ -132,7 +132,8 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            var cardsJson = await Dispatcher.UIThread.InvokeAsync(async () => await _openAIService.ConvertTextToCardsList(ExtractedText, NumberOfcards));
+            var cardsJson = await Dispatcher.UIThread
+                .InvokeAsync(async () => await _openAIService.ConvertTextToCardsList(new PromptPayload(ExtractedText, NumberOfcards)));
 
             if (string.IsNullOrEmpty(cardsJson)) return;
 
@@ -171,7 +172,8 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void RemoveCardFromCollection(Card card) => Cards.Remove(Cards.Where(i => i.CardId == card.CardId).Single());
+    private void RemoveCardFromCollection(Card card) => 
+        Cards.Remove(Cards.Where(i => i.CardId == card.CardId).Single());
 
     [RelayCommand]
     private async Task SaveAnkiCards()

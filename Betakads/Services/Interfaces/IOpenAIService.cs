@@ -2,5 +2,5 @@
 
 interface IOpenAIService
 {
-    Task<string> ConvertTextToCardsList(string promptPayload, int numberOfCards);
+    Task<string> ConvertTextToCardsList(PromptPayload payload);
 }
