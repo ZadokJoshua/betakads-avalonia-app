@@ -132,8 +132,7 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            var cardsJson = await Dispatcher.UIThread.InvokeAsync(async () => 
-            await _openAIService.ConvertTextToCardsList(new PromptPayload(ExtractedText, NumberOfcards)));
+            var cardsJson = await Dispatcher.UIThread.InvokeAsync(async () => await _openAIService.ConvertTextToCardsList(ExtractedText, NumberOfcards));
 
             if (string.IsNullOrEmpty(cardsJson)) return;
 
