@@ -18,7 +18,8 @@ public class OpenAIService(bool useAzureOpenAI = false) : IOpenAIService
                 new ChatMessage(ChatRole.System, "You are a helpful assistant designed to output JSON."),
 
                 new ChatMessage(ChatRole.User, """
-                You wiil create an array of 9 cards from random concepts in this text. A Card has two properties: Front(string) and Back(string).
+                A Card has three properties: CardId (integer), Front(string) and Back(string). Starting from 1, the CardId increments for every card object.
+                You wiil create an array of 9 cards only from random concepts in this text.
                 
                 The characteristics of the Dead Sea: Salt lake located on the border between Israel and Jordan. Its shoreline is the lowest point on the Earth's surface, averaging 396 m below sea level. It is 74 km long. It is seven times as salty (30% by volume) as the ocean. Its density keeps swimmers afloat. Only simple organisms can live in its saline waters
                 """),
@@ -26,44 +27,53 @@ public class OpenAIService(bool useAzureOpenAI = false) : IOpenAIService
                 new ChatMessage(ChatRole.Assistant, """
                 [
                             {
+                                "CardId": 1,
                                 "front": "Where is the Dead Sea located?",
                                 "back": "on the border between Israel and Jordan"
                             },
                             {
+                                "CardId": 2,
                                 "front": "What is the lowest point on the Earth's surface?",
                                 "back": "The Dead Sea shoreline"
                             },
                             {
+                                "CardId": 3,
                                 "front": "What is the average level on which the Dead Sea is located?",
                                 "back": "396 meters (below sea level)"
                             },
                             {
+                                "CardId": 4,
                                 "front": "How long is the Dead Sea?",
                                 "back": "74 km"
                             },
                             {
+                                "CardId": 5,
                                 "front": "How much saltier is the Dead Sea as compared with the oceans?",
                                 "back": "7 times"
                             },
                             {
+                                "CardId": 6,
                                 "front": "What is the volume content of salt in the Dead Sea?",
                                 "back": "30%"
                             },
                             {
+                                "CardId": 7,
                                 "front": "Why can the Dead Sea keep swimmers afloat?",
                                 "back": "due to high salt content"
                             },
                             {
+                                "CardId": 8,
                                 "front": "Why is the Dead Sea called Dead?",
                                 "back": "because only simple organisms can live in it"
                             },
                             {
+                                "CardId": 9,
                                 "front": "Why only simple organisms can live in the Dead Sea?",
                                 "back": "because of high salt content"
                             }
                         ]
                 """),
-                new ChatMessage(ChatRole.User, $"Create an array of {numberOfCards} cards from this text: {promptPayload}"),
+                new ChatMessage(ChatRole.User, $"Create an array of {numberOfCards} cards only from this text: {promptPayload}"),
             },
 
             // DeploymentName = "gpt-35-turbo-1106", // For Azure Open AI
