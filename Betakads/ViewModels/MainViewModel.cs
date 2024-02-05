@@ -171,7 +171,7 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void RemoveCardFromCollection(Card card) => Cards.Remove(Cards.Where(i => i.Front == card.Front).Single());
+    private void RemoveCardFromCollection(Card card) => Cards.Remove(Cards.Where(i => i.CardId == card.CardId).Single());
 
     [RelayCommand]
     private async Task SaveAnkiCards()
