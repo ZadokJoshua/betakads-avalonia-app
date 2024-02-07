@@ -163,7 +163,7 @@
                                 Minimum="3"
                                 TickFrequency="1"
                                 TickPlacement="BottomRight"
-                                Value="{Binding NumberOfcards}" />
+                                Value="{Binding NumberOfcards, Mode=OneWayToSource}" />
                         </Grid>
 
                         <!--  End of Input Region Grid  -->

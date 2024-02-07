@@ -26,7 +26,7 @@ public partial class MainViewModel : ViewModelBase
     private bool _isSelectSourceTypeYoutube = true;
 
     [ObservableProperty]
-    private int _numberOfcards = 3;
+    private int _numberOfcards;
 
     [ObservableProperty]
     private bool _changeFileNamePrefix;
@@ -204,6 +204,7 @@ public partial class MainViewModel : ViewModelBase
     private async Task OpenInAnki()
     {
         await SaveAnkiCards();
+
         OpenAnkiImportSettings(_savedFilePath);
     }
     #endregion
