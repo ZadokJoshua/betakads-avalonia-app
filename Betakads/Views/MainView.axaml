@@ -301,7 +301,7 @@
                                 Background="#81a2be"
                                 Command="{Binding OpenInAnkiCommand}"
                                 Content="Open in Anki"
-                                ToolTip.Tip="Save cards in a .txt format and open in Anki Import Settings." />
+                                ToolTip.Tip="Open in Anki Import Settings." />
                         </StackPanel>
                     </StackPanel>
                 </Grid>

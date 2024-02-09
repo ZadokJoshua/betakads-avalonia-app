@@ -50,6 +50,7 @@ public partial class MainViewModel : ViewModelBase
     private bool _isBusy;
 
     private string _savedFilePath = string.Empty;
+    private string _defaultFileName = $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
 
     public ObservableCollection<Card> Cards { get; set; } = [];
     #endregion
@@ -69,6 +70,18 @@ public partial class MainViewModel : ViewModelBase
 
     private async Task<YoutubeMetadata> GetVideoMetaData(string videoUrl) => 
         await _youtubeService.GetVideoMetadata(videoUrl);
+
+    private string ConvertGeneratedCardsToString()
+    {
+        StringBuilder ankiTxt = new();
+
+        foreach (var card in Cards.ToList())
+        {
+            ankiTxt.AppendLine($"{card.Front};{card.Back}");
+        }
+
+        return ankiTxt.ToString();
+    }
 
     #region Commands
     [RelayCommand]
@@ -182,29 +195,28 @@ public partial class MainViewModel : ViewModelBase
         if (Cards.Count <= 0) return;
         StringBuilder ankiTxt = new();
 
-        var selectedFolder = await DoOpenFileOrFolderPickerAsync(isFile: false);
+        foreach (var card in Cards.ToList())
+        {
+            ankiTxt.AppendLine($"{card.Front};{card.Back}");
+        }
 
+        string fileName = ChangeFileNamePrefix
+            ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"
+            : _defaultFileName;
+
+        var selectedFolder = await DoOpenFileOrFolderPickerAsync(isFile: false);
         if (selectedFolder != null)
         {
-            foreach (var card in Cards.ToList())
-            {
-                ankiTxt.AppendLine($"{card.Front};{card.Back}");
-            }
-
-            string fileName = ChangeFileNamePrefix 
-                ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt" 
-                : $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
-
             _savedFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
-            File.WriteAllText(_savedFilePath, ankiTxt.ToString());
+            File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
         }
     }
 
     [RelayCommand]
-    private async Task OpenInAnki()
+    private void OpenInAnki()
     {
-        await SaveAnkiCards();
-
+        _savedFilePath = Path.Combine(Path.GetTempPath(), _defaultFileName);
+        File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
         OpenAnkiImportSettings(_savedFilePath);
     }
     #endregion
