@@ -19,6 +19,21 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
+    <UserControl.Styles>
+        <Style Selector="Border.Result">
+            <Style.Animations>
+                <Animation Duration="0:0:0.5">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1.0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
     <Grid Margin="8" RowDefinitions="Auto,*">
 
         <!--  Top Section with Title  -->
@@ -242,7 +257,8 @@
                                         Margin="0,10,0,0"
                                         Padding="5"
                                         BorderBrush="{DynamicResource SystemAccentColor}"
-                                        BorderThickness="1"
+                                        BorderThickness="2"
+                                        Classes="Result"
                                         CornerRadius="5">
                                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,*">
                                             <TextBlock
