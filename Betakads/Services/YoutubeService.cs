@@ -15,22 +15,16 @@ namespace Betakads.Services
         {
             StringBuilder videoSubtitleText = new();
 
-            try
-            {
-                var trackManifest = await _youtubeClient.Videos.ClosedCaptions.GetManifestAsync(videoUrl);
+            var trackManifest = await _youtubeClient.Videos.ClosedCaptions.GetManifestAsync(videoUrl);
 
-                var trackInfo = trackManifest.GetByLanguage("en");
-                var track = await _youtubeClient.Videos.ClosedCaptions.GetAsync(trackInfo);
+            var trackInfo = trackManifest.GetByLanguage("en");
+            var track = await _youtubeClient.Videos.ClosedCaptions.GetAsync(trackInfo);
 
-                foreach (var caption in track.Captions)
-                {
-                    videoSubtitleText.Append(caption);
-                }
-            }
-            catch (Exception)
+            foreach (var caption in track.Captions)
             {
-                throw;
+                videoSubtitleText.Append(caption);
             }
+
             return videoSubtitleText.ToString();
         }
 
