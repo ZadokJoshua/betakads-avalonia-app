@@ -60,6 +60,22 @@ public partial class MainViewModel : ViewModelBase
         _pdfService = new();
         _youtubeService = new();
         _openAIService = new();
+
+        var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
+        {
+            ContentTitle = "Error",
+            ContentMessage = "Zadok",
+            Icon = Icon.Error,
+            MaxWidth = 400,
+            MaxHeight = 250,
+            ShowInCenter = true,
+            Topmost = false,
+            ButtonDefinitions = [
+                    new ButtonDefinition { Name = "Ok" },
+            ]
+        });
+
+        Task.WaitAll(box.ShowAsync());
     }
 
     partial void OnExtractedTextChanged(string value)
@@ -87,7 +103,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task SelectFile()
     {
-            var file = await DoOpenFileOrFolderPickerAsync(isFile: true);
+            var file = await OpenFilePickerAsync();
             if (file is null) return;
             SelectedFile = (IStorageFile)file;
             FileName = SelectedFile.Name;
@@ -135,7 +151,6 @@ public partial class MainViewModel : ViewModelBase
         {
             IsBusy = false;
         }
-       
     }
 
     [RelayCommand]
@@ -193,18 +208,12 @@ public partial class MainViewModel : ViewModelBase
     private async Task SaveAnkiCards()
     {
         if (Cards.Count <= 0) return;
-        StringBuilder ankiTxt = new();
-
-        foreach (var card in Cards.ToList())
-        {
-            ankiTxt.AppendLine($"{card.Front};{card.Back}");
-        }
 
         string fileName = ChangeFileNamePrefix
             ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"
             : _defaultFileName;
 
-        var selectedFolder = await DoOpenFileOrFolderPickerAsync(isFile: false);
+        var selectedFolder = await OpenFolderPickerAsync();
         if (selectedFolder != null)
         {
             _savedFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
