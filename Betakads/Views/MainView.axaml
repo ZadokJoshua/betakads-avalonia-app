@@ -328,9 +328,10 @@
             x:Name="ProgressRingPanel"
             Grid.Row="1"
             Grid.ColumnSpan="2"
-            Background="DarkGray"
+            Background="{DynamicResource SystemAccentColor}"
             IsVisible="{Binding IsBusy}"
-            Opacity="0.5">
+            Opacity="0.7"
+            Margin="4">
             <progRing:ProgressRing
                 Width="80"
                 Height="80"

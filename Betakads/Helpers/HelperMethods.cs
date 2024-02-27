@@ -1,5 +1,6 @@
-﻿using Avalonia.Platform.Storage;
-using Betakads.Views;
+﻿using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using MsBox.Avalonia;
 using System.Diagnostics;
 
 namespace Betakads.Helpers;
@@ -45,5 +46,26 @@ public static class HelperMethods
         ankiProcess.StartInfo.FileName = @"C:\\Users\\Zadok\\AppData\\Local\\Programs\\Anki\\anki.exe";
         ankiProcess.StartInfo.Arguments = filePath;
         ankiProcess.Start();
+    }
+
+    public static async Task ShowMessageBox(string message)
+    {
+        var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
+        {
+            ContentHeader = "🚨 Error",
+            ContentMessage = message,
+            MaxWidth = 400,
+            MaxHeight = 700,
+            SystemDecorations = Avalonia.Controls.SystemDecorations.None, // This removes the title bar
+            WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
+            Topmost = true,
+            ShowInCenter = false,
+            ButtonDefinitions = [
+            new ButtonDefinition { Name = "Ok" },
+            ]
+        });
+
+
+        await box.ShowAsync();
     }
 }

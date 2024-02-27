@@ -60,22 +60,6 @@ public partial class MainViewModel : ViewModelBase
         _pdfService = new();
         _youtubeService = new();
         _openAIService = new();
-
-        var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
-        {
-            ContentTitle = "Error",
-            ContentMessage = "Zadok",
-            Icon = Icon.Error,
-            MaxWidth = 400,
-            MaxHeight = 250,
-            ShowInCenter = true,
-            Topmost = false,
-            ButtonDefinitions = [
-                    new ButtonDefinition { Name = "Ok" },
-            ]
-        });
-
-        Task.WaitAll(box.ShowAsync());
     }
 
     partial void OnExtractedTextChanged(string value)
@@ -156,12 +140,12 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task GenerateCards()
     {
-        if (string.IsNullOrWhiteSpace(ExtractedText)) return;
-
         IsBusy = true;
 
         try
         {
+            if (string.IsNullOrWhiteSpace(ExtractedText)) throw new ArgumentNullException("Extracted text field is empty!");
+
             var cardsJson = await Dispatcher.UIThread
                 .InvokeAsync(async () => await _openAIService.ConvertTextToCardsList(new PromptPayload(ExtractedText, NumberOfcards)));
 
@@ -178,21 +162,7 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
-            {
-                ContentTitle = "Error",
-                ContentMessage = ex.Message,
-                Icon = Icon.Error,
-                MaxWidth = 400,
-                MaxHeight = 250,
-                ShowInCenter = true,
-                Topmost = false,
-                ButtonDefinitions = [
-                    new ButtonDefinition { Name = "Ok"},
-                ]
-            });
-
-            await box.ShowAsync();
+            await ShowMessageBox(ex.Message);
         }
         finally
         {
