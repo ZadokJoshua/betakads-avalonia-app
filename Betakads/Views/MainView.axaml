@@ -339,7 +339,8 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Foreground="Black"
-                IsActive="{Binding #ProgressRingPanel.IsVisible}" />
+                IsActive="{Binding #ProgressRingPanel.IsVisible}"
+                IsVisible="{Binding #ProgressRingPanel.IsVisible}"/>
         </Panel>
     </Grid>
 </UserControl>

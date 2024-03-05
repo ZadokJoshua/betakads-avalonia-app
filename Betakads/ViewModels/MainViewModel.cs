@@ -100,36 +100,23 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-                await Dispatcher.UIThread.InvokeAsync(async () =>
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                if (IsSelectSourceTypeYoutube && !string.IsNullOrEmpty(YoutubeVideoUrl))
                 {
-                    if (IsSelectSourceTypeYoutube)
-                    {
-                        if (string.IsNullOrEmpty(YoutubeVideoUrl)) return;
+                    ExtractedText = await _youtubeService.GetVideoCaptions(YoutubeVideoUrl);
+                    YoutubeMetadata = await GetVideoMetaData(YoutubeVideoUrl);
+                }
 
-                        ExtractedText = await _youtubeService.GetVideoCaptions(YoutubeVideoUrl);
-                        YoutubeMetadata = await GetVideoMetaData(YoutubeVideoUrl);
-                    }
-                    else
-                    {
-                        if (SelectedFile == null) return;
-
-                        ExtractedText = await _pdfService.ExtractTxtFromPdf(SelectedFile.Path.LocalPath);
-                    }
-                });
+                if (!IsSelectSourceTypeYoutube && SelectedFile is not null)
+                {
+                    ExtractedText = await _pdfService.ExtractTxtFromPdf(SelectedFile.Path.LocalPath);
+                }
+            });
         }
         catch(Exception ex)
         {
-            var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
-            {
-                ContentTitle = "Error",
-                ContentMessage = ex.Message,
-                Icon = Icon.Error,
-                MaxWidth = 500,
-                MaxHeight = 800,
-                ShowInCenter = true
-            });
-
-            await box.ShowAsync();
+            await ShowMessageBox(ex.Message);
         }
         finally
         {
@@ -147,7 +134,8 @@ public partial class MainViewModel : ViewModelBase
             if (string.IsNullOrWhiteSpace(ExtractedText)) throw new ArgumentNullException("Extracted text field is empty!");
 
             var cardsJson = await Dispatcher.UIThread
-                .InvokeAsync(async () => await _openAIService.ConvertTextToCardsList(new PromptPayload(ExtractedText, NumberOfcards)));
+                .InvokeAsync(async () => await _openAIService
+                .ConvertTextToCardsList(new PromptPayload(ExtractedText, NumberOfcards)));
 
             if (string.IsNullOrEmpty(cardsJson)) return;
 
@@ -179,13 +167,13 @@ public partial class MainViewModel : ViewModelBase
     {
         if (Cards.Count <= 0) return;
 
-        string fileName = ChangeFileNamePrefix
-            ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"
-            : _defaultFileName;
-
         var selectedFolder = await OpenFolderPickerAsync();
-        if (selectedFolder != null)
+        if (selectedFolder is not null)
         {
+            string fileName = ChangeFileNamePrefix
+                ? $"{AnkiTxtFilePrefix}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"
+                : _defaultFileName;
+
             _savedFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
             File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
         }

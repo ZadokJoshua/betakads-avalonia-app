@@ -65,7 +65,6 @@ public static class HelperMethods
             ]
         });
 
-
         await box.ShowAsync();
     }
 }
