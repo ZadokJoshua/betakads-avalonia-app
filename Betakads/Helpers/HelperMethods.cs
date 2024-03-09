@@ -1,7 +1,5 @@
-﻿using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using MsBox.Avalonia;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using FluentAvalonia.UI.Controls;
 
 namespace Betakads.Helpers;
 
@@ -48,23 +46,27 @@ public static class HelperMethods
         ankiProcess.Start();
     }
 
-    public static async Task ShowMessageBox(string message)
+    public static void ShowMessageBox(string message, MessageBoxType messageBoxType)
     {
-        var box = MessageBoxManager.GetMessageBoxCustom(new MessageBoxCustomParams
+        var resultHint = new ContentDialog()
         {
-            ContentHeader = "🚨 Error",
-            ContentMessage = message,
-            MaxWidth = 400,
-            MaxHeight = 700,
-            SystemDecorations = Avalonia.Controls.SystemDecorations.None, // This removes the title bar
-            WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner,
-            Topmost = true,
-            ShowInCenter = false,
-            ButtonDefinitions = [
-            new ButtonDefinition { Name = "Ok" },
-            ]
-        });
+            Content = $"{message}",
+            Title = _messageBoxTitle[messageBoxType],
+            PrimaryButtonText = "Close"
+        };
 
-        await box.ShowAsync();
+        _ = resultHint.ShowAsync();
     }
+
+    private static Dictionary<MessageBoxType, string> _messageBoxTitle = new Dictionary<MessageBoxType, string>()
+    {
+        { MessageBoxType.Error, "🚨 Error" },
+        { MessageBoxType.Info, "ℹ Info" }
+    };
+}
+
+public enum MessageBoxType
+{
+    Error,
+    Info
 }
