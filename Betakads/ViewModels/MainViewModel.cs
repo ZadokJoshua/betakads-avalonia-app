@@ -1,7 +1,4 @@
-﻿using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
+﻿using FluentAvalonia.UI.Controls;
 using static Betakads.Helpers.HelperMethods;
 
 namespace Betakads.ViewModels;
@@ -74,12 +71,7 @@ public partial class MainViewModel : ViewModelBase
     private string ConvertGeneratedCardsToString()
     {
         StringBuilder ankiTxt = new();
-
-        foreach (var card in Cards.ToList())
-        {
-            ankiTxt.AppendLine($"{card.Front};{card.Back}");
-        }
-
+        Cards.ToList().Select(ankiTxt.Append);
         return ankiTxt.ToString();
     }
 
@@ -116,7 +108,7 @@ public partial class MainViewModel : ViewModelBase
         }
         catch(Exception ex)
         {
-            await ShowMessageBox(ex.Message);
+            ShowMessageBox(ex.Message, Helpers.MessageBoxType.Error);
         }
         finally
         {
@@ -150,7 +142,8 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            await ShowMessageBox(ex.Message);
+
+            ShowMessageBox(ex.Message, Helpers.MessageBoxType.Error);
         }
         finally
         {
