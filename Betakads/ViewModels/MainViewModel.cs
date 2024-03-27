@@ -71,7 +71,7 @@ public partial class MainViewModel : ViewModelBase
     private string ConvertGeneratedCardsToString()
     {
         StringBuilder ankiTxt = new();
-        Cards.ToList().Select(b => ankiTxt.Append(b));
+        Cards.ToList().Select(ankiTxt.Append);
         return ankiTxt.ToString();
     }
 

@@ -40,7 +40,7 @@
         <Grid
             Grid.Row="0"
             Margin="4"
-            ColumnDefinitions="*,*,.3*">
+            ColumnDefinitions="*,Auto">
             <StackPanel Grid.Column="0">
                 <TextBlock
                     VerticalAlignment="Center"
@@ -53,8 +53,6 @@
                     FontWeight="Light"
                     Text="Anki Generator Powered by AI" />
             </StackPanel>
-          
-          <Button Content="Settings" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="1" CornerRadius="8"/>
 
         </Grid>
 
