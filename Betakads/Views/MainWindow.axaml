@@ -18,13 +18,13 @@
     mc:Ignorable="d">
     <Panel>
         <ExperimentalAcrylicBorder IsHitTestVisible="False">
-            <ExperimentalAcrylicBorder.Material>
-                <ExperimentalAcrylicMaterial
-                    BackgroundSource="Digger"
-                    MaterialOpacity="0.85"
-                    TintColor="Black"
-                    TintOpacity="1" />
-            </ExperimentalAcrylicBorder.Material>
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
+                BackgroundSource="Digger"
+                MaterialOpacity="0.85"
+                TintColor="Black"
+                TintOpacity="1" />
+          </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
         <views:MainView />
     </Panel>
