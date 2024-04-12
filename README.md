@@ -9,10 +9,13 @@ private readonly OpenAIClient _openAIClient = useAzureOpenAI ? new OpenAIClient(
     new Uri(AZURE_URI), new AzureKeyCredential(AZURE_KEY))
         : new OpenAIClient(OPEN_AI_KEY);
 ```
-
-***
+#
 ![betakads window-initial state](/Images/Betakads-Fluent1.png)
 ![betakads window-result](/Images/Betakads-Fluent2.png)
-***
+#
 **Prompt Reference:**
 - [Casting a spell on ChatGPT: Let it write Anki cards for you — A Prompt Engineering Case - Jarrett Ye](https://medium.com/@JarrettYe/casting-a-spell-on-chatgpt-let-it-write-anki-cards-for-you-a-prompt-engineering-case-fd7d577b9d94)
+
+<div align="center">
+    <img src="https://github.com/ZadokJoshua/betakads-avalonia-app/assets/65626254/f39824f0-0d70-4dec-ae4d-a2871006219a"  Height=150/>
+</div>
