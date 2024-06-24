@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.IO;
+using System.Diagnostics;
 using FluentAvalonia.UI.Controls;
 
 namespace Betakads.Helpers;
@@ -21,7 +22,7 @@ public static class HelperMethods
         {
             Title = "Select File",
             AllowMultiple = false,
-            FileTypeFilter = new[] { FilePickerFileTypes.Pdf }
+            FileTypeFilter = [FilePickerFileTypes.Pdf]
         });
 
         return files?.Count >= 1 ? files[0] : null;
@@ -40,8 +41,17 @@ public static class HelperMethods
 
     public static void OpenAnkiImportSettings(string filePath)
     {
+        string appDataPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).ToString();
+
+        string executablePath = Path.Combine(appDataPath, @"Local\Programs\Anki\anki.exe");
+
+        if (!File.Exists(executablePath))
+        {
+            throw new FileNotFoundException(string.Format("Executable '{0}' not found!", executablePath));
+        }
+
         using Process ankiProcess = new();
-        ankiProcess.StartInfo.FileName = @"C:\\Users\\Zadok\\AppData\\Local\\Programs\\Anki\\anki.exe";
+        ankiProcess.StartInfo.FileName = executablePath;
         ankiProcess.StartInfo.Arguments = filePath;
         ankiProcess.Start();
     }
@@ -58,7 +68,7 @@ public static class HelperMethods
         _ = resultHint.ShowAsync();
     }
 
-    private static Dictionary<MessageBoxType, string> _messageBoxTitle = new Dictionary<MessageBoxType, string>()
+    private static readonly Dictionary<MessageBoxType, string> _messageBoxTitle = new()
     {
         { MessageBoxType.Error, "🚨 Error" },
         { MessageBoxType.Info, "ℹ Info" }

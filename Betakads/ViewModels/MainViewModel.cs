@@ -177,7 +177,14 @@ public partial class MainViewModel : ViewModelBase
     {
         _savedFilePath = Path.Combine(Path.GetTempPath(), _defaultFileName);
         File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
-        OpenAnkiImportSettings(_savedFilePath);
+        try
+        {
+            OpenAnkiImportSettings(_savedFilePath);
+        }
+        catch (Exception ex)
+        {
+            ShowMessageBox(ex.Message, Helpers.MessageBoxType.Error);
+        }
     }
     #endregion
 }
