@@ -6,9 +6,9 @@ namespace Betakads.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     #region Fields
-    private readonly PdfService _pdfService;
-    private readonly YoutubeService _youtubeService;
-    private readonly OpenAIService _openAIService;
+    private readonly IPdfService _pdfService;
+    private readonly IYoutubeService _youtubeService;
+    private readonly IOpenAIService _openAIService;
 
     [ObservableProperty]
     private string _fileName = "No File Selected";
@@ -54,9 +54,9 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
-        _pdfService = new();
-        _youtubeService = new();
-        _openAIService = new();
+        _pdfService = new PdfService();
+        _youtubeService = new YoutubeService();
+        _openAIService = new OpenAIService();
     }
 
     partial void OnExtractedTextChanged(string value)
@@ -71,7 +71,7 @@ public partial class MainViewModel : ViewModelBase
     private string ConvertGeneratedCardsToString()
     {
         StringBuilder ankiTxt = new();
-        Cards.ToList().Select(ankiTxt.Append);
+        _ = Cards.AsEnumerable<Card>().Select(ankiTxt.Append);
         return ankiTxt.ToString();
     }
 
@@ -158,7 +158,11 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task SaveAnkiCards()
     {
-        if (Cards.Count <= 0) return;
+        if (Cards.Count <= 0)
+        {
+            ShowMessageBox("No generated cards!", Helpers.MessageBoxType.Info);
+            return;
+        }
 
         var selectedFolder = await OpenFolderPickerAsync();
         if (selectedFolder is not null)
@@ -170,11 +174,18 @@ public partial class MainViewModel : ViewModelBase
             _savedFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
             File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
         }
+        ShowMessageBox("Cards saved!", Helpers.MessageBoxType.Info);
     }
 
     [RelayCommand]
     private void OpenInAnki()
     {
+        if (Cards.Count <= 0)
+        {
+            ShowMessageBox("No generated cards!", Helpers.MessageBoxType.Info);
+            return;
+        }
+
         _savedFilePath = Path.Combine(Path.GetTempPath(), _defaultFileName);
         File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
         try
