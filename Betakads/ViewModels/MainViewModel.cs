@@ -1,5 +1,7 @@
 ﻿using FluentAvalonia.UI.Controls;
-using static Betakads.Helpers.HelperMethods;
+using static Betakads.Helpers.StorageProviderHelper;
+using static Betakads.Helpers.AnkiHelper;
+using static Betakads.Helpers.MessageBoxHelper;
 
 namespace Betakads.ViewModels;
 
@@ -92,15 +94,19 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
+            if (IsSelectSourceTypeYoutube && string.IsNullOrEmpty(YoutubeVideoUrl))
+                throw new ArgumentNullException(nameof(YoutubeVideoUrl), "YoutubeVideoUrl cannot be null or empty.");
+            if (!IsSelectSourceTypeYoutube && SelectedFile == null)
+                throw new ArgumentNullException(nameof(SelectedFile), "SelectedFile cannot be null.");
+
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                if (IsSelectSourceTypeYoutube && !string.IsNullOrEmpty(YoutubeVideoUrl))
+                if (IsSelectSourceTypeYoutube)
                 {
                     ExtractedText = await _youtubeService.GetVideoCaptions(YoutubeVideoUrl);
                     YoutubeMetadata = await GetVideoMetaData(YoutubeVideoUrl);
                 }
-
-                if (!IsSelectSourceTypeYoutube && SelectedFile is not null)
+                else
                 {
                     ExtractedText = await _pdfService.ExtractTxtFromPdf(SelectedFile.Path.LocalPath);
                 }
@@ -123,7 +129,7 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            if (string.IsNullOrWhiteSpace(ExtractedText)) throw new ArgumentNullException("Extracted text field is empty!");
+            if (string.IsNullOrWhiteSpace(ExtractedText)) throw new ArgumentNullException(nameof(ExtractedText), "Extracted text cannot be null or whitespace.");
 
             var cardsJson = await Dispatcher.UIThread
                 .InvokeAsync(async () => await _openAIService
@@ -142,7 +148,6 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-
             ShowMessageBox(ex.Message, Helpers.MessageBoxType.Error);
         }
         finally
