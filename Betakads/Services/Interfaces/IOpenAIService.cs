@@ -1,6 +1,6 @@
 ﻿namespace Betakads.Services.Interfaces;
 
-interface IOpenAIService
+public interface IOpenAIService
 {
     Task<string> ConvertTextToCardsList(PromptPayload payload);
 }

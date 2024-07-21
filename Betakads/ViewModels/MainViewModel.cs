@@ -5,12 +5,12 @@ using static Betakads.Helpers.MessageBoxHelper;
 
 namespace Betakads.ViewModels;
 
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtubeService, IOpenAIService openAIService) : ViewModelBase
 {
     #region Fields
-    private readonly IPdfService _pdfService;
-    private readonly IYoutubeService _youtubeService;
-    private readonly IOpenAIService _openAIService;
+    private readonly IPdfService _pdfService = pdfService;
+    private readonly IYoutubeService _youtubeService = youtubeService;
+    private readonly IOpenAIService _openAIService = openAIService;
 
     [ObservableProperty]
     private string _fileName = "No File Selected";
@@ -49,17 +49,11 @@ public partial class MainViewModel : ViewModelBase
     private bool _isBusy;
 
     private string _savedFilePath = string.Empty;
-    private string _defaultFileName = $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
+    private readonly string _defaultFileName = $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
 
     public ObservableCollection<Card> Cards { get; set; } = [];
-    #endregion
 
-    public MainViewModel()
-    {
-        _pdfService = new PdfService();
-        _youtubeService = new YoutubeService();
-        _openAIService = new OpenAIService();
-    }
+    #endregion
 
     partial void OnExtractedTextChanged(string value)
     {

@@ -21,6 +21,8 @@
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
     <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.10.5" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.16.0" />
     <PackageReference Include="PdfPig" Version="0.1.9-alpha-20231119-4537e" />
     <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.7" />
     <PackageReference Include="YoutubeExplode" Version="6.3.13" />
