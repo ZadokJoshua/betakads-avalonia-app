@@ -2,15 +2,16 @@
 using static Betakads.Helpers.StorageProviderHelper;
 using static Betakads.Helpers.AnkiHelper;
 using static Betakads.Helpers.MessageBoxHelper;
+using Betakads.Models;
 
 namespace Betakads.ViewModels;
 
-public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtubeService, IOpenAIService openAIService) : ViewModelBase
+public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtubeService, IAIService aIService) : ViewModelBase
 {
     #region Fields
     private readonly IPdfService _pdfService = pdfService;
     private readonly IYoutubeService _youtubeService = youtubeService;
-    private readonly IOpenAIService _openAIService = openAIService;
+    private readonly IAIService _aIService = aIService;
 
     [ObservableProperty]
     private string _fileName = "No File Selected";
@@ -61,13 +62,13 @@ public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtu
         NumberOfExtractedTextWords = Regex.Matches(value, "\\w+").Count;
     }
 
-    private async Task<YoutubeMetadata> GetVideoMetaData(string videoUrl) => 
+    private async Task<YoutubeMetadata> GetVideoMetaData(string videoUrl) =>
         await _youtubeService.GetVideoMetadata(videoUrl);
 
     private string ConvertGeneratedCardsToString()
     {
         StringBuilder ankiTxt = new();
-        _ = Cards.AsEnumerable<Card>().Select(ankiTxt.Append);
+        Cards.ToList().Select(ankiTxt.Append);
         return ankiTxt.ToString();
     }
 
@@ -75,10 +76,10 @@ public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtu
     [RelayCommand]
     private async Task SelectFile()
     {
-            var file = await OpenFilePickerAsync();
-            if (file is null) return;
-            SelectedFile = (IStorageFile)file;
-            FileName = SelectedFile.Name;
+        var file = await OpenFilePickerAsync();
+        if (file is null) return;
+        SelectedFile = (IStorageFile)file;
+        FileName = SelectedFile.Name;
     }
 
     [RelayCommand]
@@ -106,7 +107,7 @@ public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtu
                 }
             });
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             ShowMessageBox(ex.Message, Helpers.MessageBoxType.Error);
         }
@@ -126,7 +127,7 @@ public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtu
             if (string.IsNullOrWhiteSpace(ExtractedText)) throw new ArgumentNullException(nameof(ExtractedText), "Extracted text cannot be null or whitespace.");
 
             var cardsJson = await Dispatcher.UIThread
-                .InvokeAsync(async () => await _openAIService
+                .InvokeAsync(async () => await _aIService
                 .ConvertTextToCardsList(new PromptPayload(ExtractedText, NumberOfcards)));
 
             if (string.IsNullOrEmpty(cardsJson)) return;
@@ -151,7 +152,7 @@ public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtu
     }
 
     [RelayCommand]
-    private void RemoveCardFromCollection(Card card) => 
+    private void RemoveCardFromCollection(Card card) =>
         Cards.Remove(Cards.Where(i => i.CardId == card.CardId).Single());
 
     [RelayCommand]

@@ -1,30 +1,19 @@
-﻿using Azure.AI.OpenAI;
-using Azure;
+﻿using Microsoft.ML.OnnxRuntimeGenAI;
 
 namespace Betakads.Services;
 
-public class OpenAIService(bool useAzureOpenAI = false) : IOpenAIService
+public class AIService(Model model, Tokenizer tokenizer) : IAIService
 {
-    private readonly OpenAIClient _openAIClient = useAzureOpenAI ? new OpenAIClient(
-        new Uri(ApiSettings.AZURE_URI), new AzureKeyCredential(ApiSettings.AZURE_KEY))
-            : new OpenAIClient(ApiSettings.OPEN_AI_KEY);
-
     public async Task<string> ConvertTextToCardsList(PromptPayload payload)
     {
-        var chatCompletionsOptions = new ChatCompletionsOptions()
-        {
-            Messages =
-            {
-                new ChatMessage(ChatRole.System, "You are a helpful assistant designed to output JSON."),
-
-                new ChatMessage(ChatRole.User, """
+        var systemPrompt = "You are a helpful assistant designed to output JSON.";
+        var userMessage = """
                 A Card has three properties: CardId (integer), Front(string) and Back(string). Starting from 1, the CardId increments for every card object.
                 You wiil create an array of 9 cards only from random concepts in this text.
                 
                 The characteristics of the Dead Sea: Salt lake located on the border between Israel and Jordan. Its shoreline is the lowest point on the Earth's surface, averaging 396 m below sea level. It is 74 km long. It is seven times as salty (30% by volume) as the ocean. Its density keeps swimmers afloat. Only simple organisms can live in its saline waters
-                """),
-
-                new ChatMessage(ChatRole.Assistant, """
+                """;
+        var assistantMessage = """
                 [
                             {
                                 "CardId": 1,
@@ -72,19 +61,29 @@ public class OpenAIService(bool useAzureOpenAI = false) : IOpenAIService
                                 "back": "because of high salt content"
                             }
                         ]
-                """),
-                new ChatMessage(ChatRole.User, $"Create an array of {payload.NumberOfCards} cards only from this text: {payload.ExtractedText}"),
-            },
+                """;
 
-            // DeploymentName = "gpt-35-turbo-1106", // For Azure Open AI
-            DeploymentName = "gpt-3.5-turbo", // For Non Azure Open AI
-            MaxTokens = 2048,
-            Temperature = 0.7f,
-            NucleusSamplingFactor = 0.95f
-        };
+        var userPrompt = $"Create an array of {payload.NumberOfCards} cards only from this text: {payload.ExtractedText}";
 
-        var completionResult = await _openAIClient.GetChatCompletionsAsync(chatCompletionsOptions);
+        var fullPrompt = $"<|system|>{systemPrompt}<|end|><|user|>{userMessage}<|end|><|assistant|>{assistantMessage}<|end|><|user|>{userPrompt}<|end|><|assistant|>";
 
-        return completionResult.Value.Choices[0].Message.Content;
+        var tokens = tokenizer.Encode(fullPrompt);
+
+        using var generatorParams = new GeneratorParams(model);
+        generatorParams.SetSearchOption("max_length", 2048);
+        generatorParams.SetInputSequences(tokens);
+
+        var result = new StringBuilder();
+        using var generator = new Generator(model, generatorParams);
+
+        while (!generator.IsDone())
+        {
+            generator.ComputeLogits();
+            generator.GenerateNextToken();
+            string output = tokenizer.Decode(generator.GetSequence(0)[^1..]);
+            result.Append(output);
+        }
+
+        return result.ToString();
     }
 }
