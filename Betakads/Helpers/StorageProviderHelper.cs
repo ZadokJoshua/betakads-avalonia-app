@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System.IO;
+using System.Diagnostics;
 using FluentAvalonia.UI.Controls;
 
 namespace Betakads.Helpers;
 
-public static class HelperMethods
+public static class StorageProviderHelper
 {
     private static IStorageProvider GetStorageProvider()
     {
@@ -21,7 +22,7 @@ public static class HelperMethods
         {
             Title = "Select File",
             AllowMultiple = false,
-            FileTypeFilter = new[] { FilePickerFileTypes.Pdf }
+            FileTypeFilter = [FilePickerFileTypes.Pdf]
         });
 
         return files?.Count >= 1 ? files[0] : null;
@@ -37,36 +38,4 @@ public static class HelperMethods
 
         return folder?.Count >= 1 ? folder[0] : null;
     }
-
-    public static void OpenAnkiImportSettings(string filePath)
-    {
-        using Process ankiProcess = new();
-        ankiProcess.StartInfo.FileName = @"C:\\Users\\Zadok\\AppData\\Local\\Programs\\Anki\\anki.exe";
-        ankiProcess.StartInfo.Arguments = filePath;
-        ankiProcess.Start();
-    }
-
-    public static void ShowMessageBox(string message, MessageBoxType messageBoxType)
-    {
-        var resultHint = new ContentDialog()
-        {
-            Content = $"{message}",
-            Title = _messageBoxTitle[messageBoxType],
-            PrimaryButtonText = "Close"
-        };
-
-        _ = resultHint.ShowAsync();
-    }
-
-    private static Dictionary<MessageBoxType, string> _messageBoxTitle = new Dictionary<MessageBoxType, string>()
-    {
-        { MessageBoxType.Error, "🚨 Error" },
-        { MessageBoxType.Info, "ℹ Info" }
-    };
-}
-
-public enum MessageBoxType
-{
-    Error,
-    Info
 }

@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /Betakads/Models/ApiSettings.cs
 /FeaturesToAdd.txt
+/Betakads/Models/AppSettings.cs

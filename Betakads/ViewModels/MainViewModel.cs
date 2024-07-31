@@ -1,14 +1,16 @@
 ﻿using FluentAvalonia.UI.Controls;
-using static Betakads.Helpers.HelperMethods;
+using static Betakads.Helpers.StorageProviderHelper;
+using static Betakads.Helpers.AnkiHelper;
+using static Betakads.Helpers.MessageBoxHelper;
 
 namespace Betakads.ViewModels;
 
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtubeService, IOpenAIService openAIService) : ViewModelBase
 {
     #region Fields
-    private readonly PdfService _pdfService;
-    private readonly YoutubeService _youtubeService;
-    private readonly OpenAIService _openAIService;
+    private readonly IPdfService _pdfService = pdfService;
+    private readonly IYoutubeService _youtubeService = youtubeService;
+    private readonly IOpenAIService _openAIService = openAIService;
 
     [ObservableProperty]
     private string _fileName = "No File Selected";
@@ -47,17 +49,11 @@ public partial class MainViewModel : ViewModelBase
     private bool _isBusy;
 
     private string _savedFilePath = string.Empty;
-    private string _defaultFileName = $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
+    private readonly string _defaultFileName = $"Betakad-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt";
 
     public ObservableCollection<Card> Cards { get; set; } = [];
-    #endregion
 
-    public MainViewModel()
-    {
-        _pdfService = new();
-        _youtubeService = new();
-        _openAIService = new();
-    }
+    #endregion
 
     partial void OnExtractedTextChanged(string value)
     {
@@ -71,7 +67,7 @@ public partial class MainViewModel : ViewModelBase
     private string ConvertGeneratedCardsToString()
     {
         StringBuilder ankiTxt = new();
-        Cards.ToList().Select(ankiTxt.Append);
+        _ = Cards.AsEnumerable<Card>().Select(ankiTxt.Append);
         return ankiTxt.ToString();
     }
 
@@ -92,15 +88,19 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
+            if (IsSelectSourceTypeYoutube && string.IsNullOrEmpty(YoutubeVideoUrl))
+                throw new ArgumentNullException(nameof(YoutubeVideoUrl), "YoutubeVideoUrl cannot be null or empty.");
+            if (!IsSelectSourceTypeYoutube && SelectedFile == null)
+                throw new ArgumentNullException(nameof(SelectedFile), "SelectedFile cannot be null.");
+
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                if (IsSelectSourceTypeYoutube && !string.IsNullOrEmpty(YoutubeVideoUrl))
+                if (IsSelectSourceTypeYoutube)
                 {
                     ExtractedText = await _youtubeService.GetVideoCaptions(YoutubeVideoUrl);
                     YoutubeMetadata = await GetVideoMetaData(YoutubeVideoUrl);
                 }
-
-                if (!IsSelectSourceTypeYoutube && SelectedFile is not null)
+                else
                 {
                     ExtractedText = await _pdfService.ExtractTxtFromPdf(SelectedFile.Path.LocalPath);
                 }
@@ -123,7 +123,7 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            if (string.IsNullOrWhiteSpace(ExtractedText)) throw new ArgumentNullException("Extracted text field is empty!");
+            if (string.IsNullOrWhiteSpace(ExtractedText)) throw new ArgumentNullException(nameof(ExtractedText), "Extracted text cannot be null or whitespace.");
 
             var cardsJson = await Dispatcher.UIThread
                 .InvokeAsync(async () => await _openAIService
@@ -142,7 +142,6 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-
             ShowMessageBox(ex.Message, Helpers.MessageBoxType.Error);
         }
         finally
@@ -158,7 +157,11 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task SaveAnkiCards()
     {
-        if (Cards.Count <= 0) return;
+        if (Cards.Count <= 0)
+        {
+            ShowMessageBox("No generated cards!", Helpers.MessageBoxType.Info);
+            return;
+        }
 
         var selectedFolder = await OpenFolderPickerAsync();
         if (selectedFolder is not null)
@@ -170,14 +173,28 @@ public partial class MainViewModel : ViewModelBase
             _savedFilePath = Path.Combine(selectedFolder.Path.AbsolutePath, fileName);
             File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
         }
+        ShowMessageBox("Cards saved!", Helpers.MessageBoxType.Info);
     }
 
     [RelayCommand]
     private void OpenInAnki()
     {
+        if (Cards.Count <= 0)
+        {
+            ShowMessageBox("No generated cards!", Helpers.MessageBoxType.Info);
+            return;
+        }
+
         _savedFilePath = Path.Combine(Path.GetTempPath(), _defaultFileName);
         File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
-        OpenAnkiImportSettings(_savedFilePath);
+        try
+        {
+            OpenAnkiImportSettings(_savedFilePath);
+        }
+        catch (Exception ex)
+        {
+            ShowMessageBox(ex.Message, Helpers.MessageBoxType.Error);
+        }
     }
     #endregion
 }
