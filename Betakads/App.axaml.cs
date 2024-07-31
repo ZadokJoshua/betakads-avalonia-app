@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
+﻿using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Betakads.Extensions;
 using Betakads.ViewModels;
@@ -24,6 +22,7 @@ public partial class App : Application
 
         var collection = new ServiceCollection();
         collection.AddCommonServices();
+        collection.AddAIService();
 
         var services = collection.BuildServiceProvider();
         var vm = services.GetRequiredService<MainViewModel>();
