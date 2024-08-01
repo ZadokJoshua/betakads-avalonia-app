@@ -1,14 +1,27 @@
-# ⚡Betakads
-**Anki Generator Powered by AI**
+# ⚡ Betakads
+**AI-Powered Anki Flashcard Generator**
 
-Betakads is an Anki cards generator powered by AI, designed to streamline the creation of flashcards. Users begin by selecting a data source, choosing between a PDF file or a YouTube link. The application then extracts text from the selected source, whether video captions from YouTube or textual content from a PDF document. Once the data is extracted, users can specify the number of flashcards they wish to generate. The app intelligently processes the information and creates flashcards accordingly. Finally, users can save these generated flashcards in a .txt format that aligns seamlessly with Anki Import Settings, facilitating easy integration into the Anki platform for further study and review. 
+Betakads simplifies the creation of Anki flashcards using AI. Choose a data source—either a PDF document or a YouTube video. The app extracts text from these sources, whether it's video captions or content from a PDF. Specify the number of flashcards you need, and Betakads will generate them, saving the results in a .txt format that is ready for easy import into Anki for seamless study and review.
 
-To get started, please insert your Azure Open AI URL and Key or Open AI API key into the designated placeholders in the OpenAIService.cs file.
-```csharp
-private readonly OpenAIClient _openAIClient = useAzureOpenAI ? new OpenAIClient(
-    new Uri(AZURE_URI), new AzureKeyCredential(AZURE_KEY))
-        : new OpenAIClient(OPEN_AI_KEY);
-```
+## Getting Started
+
+1. **Download the Model**  
+   Download the `phi3-mini-4k-instruct-onnx` model to your local machine using the command:
+   ```bash
+   git clone https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx <FOLDER_PATH>
+   ```
+
+2. **Configure the Model Path**  
+   Insert the absolute path to the folder containing the `.onnx` file into the designated placeholder in the `ServiceCollectionExtensions.cs` file:
+   ```csharp
+   public static void AddAIService(this IServiceCollection collection)
+   {
+       string modelPath = "<MODEL_PATH>";
+       collection.AddSingleton(new Model(modelPath)).AddSingleton<Tokenizer>();
+       collection.AddTransient<IAIService, AIService>();
+   }
+   ```
+   
 #
 ![betakads window-initial state](/Images/Betakads-Fluent1.png)
 ![betakads window-result](/Images/Betakads-Fluent2.png)
