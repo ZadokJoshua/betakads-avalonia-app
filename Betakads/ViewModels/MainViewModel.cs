@@ -68,7 +68,10 @@ public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtu
     private string ConvertGeneratedCardsToString()
     {
         StringBuilder ankiTxt = new();
-        Cards.ToList().Select(ankiTxt.Append);
+        foreach (var card in Cards.ToList())
+        {
+            ankiTxt.AppendLine($"{card.Front};{card.Back}");
+        }
         return ankiTxt.ToString();
     }
 
@@ -187,7 +190,8 @@ public partial class MainViewModel(IPdfService pdfService, IYoutubeService youtu
         }
 
         _savedFilePath = Path.Combine(Path.GetTempPath(), _defaultFileName);
-        File.WriteAllText(_savedFilePath, ConvertGeneratedCardsToString());
+        var txtString = ConvertGeneratedCardsToString();
+        File.WriteAllText(_savedFilePath, txtString);
         try
         {
             OpenAnkiImportSettings(_savedFilePath);
